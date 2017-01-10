@@ -1,0 +1,228 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<dom-module id="login-element">
+<link rel="import" href="forgot-password.html">
+<script src="https://www.gstatic.com/firebasejs/3.6.1/firebase.js"></script>
+
+  <template>
+
+    <style>
+
+      .host{
+        display: inline-block;
+      }
+
+      .pad1 {
+        padding-top: 30px;
+      }
+      .red{
+        color: rgba(247, 110, 110, 1);
+      }
+
+    </style>
+
+    
+
+
+    <div class="host">
+
+      <paper-input id="loginInput" auto-validate allowed-pattern="[a-z0-9@.]" label="Email" value="{{email}}">
+
+      <iron-icon icon="assignment-ind" prefix></iron-icon>
+
+      <paper-icon-button suffix on-click="clearEmail" icon="clear" alt="clear" title="clear"></paper-icon-button>
+
+      </paper-input>
+
+
+
+      <paper-input id="pwdInput" type="password" label="Password" value="{{password}}">
+      <iron-icon icon="lock" prefix></iron-icon>
+
+      <paper-icon-button suffix on-click="clearPwd" icon="clear" alt="clear" title="clear"></paper-icon-button>
+
+      </paper-input>
+
+      <div class="pad1">
+      <center><paper-button raised on-click="submit">Login</paper-button></center>
+      </div>
+
+
+      <div class="red">
+      <center><div class="pad1" id="wrong" style="visibility: hidden;"><h5></h5></div></center>
+      <center><div hidden$="{{len}}"><h5>Password length Must be greater than 8!</h5></div></center>
+      <center><div hidden$="{{isEmptyPassword}}"><h5>Password Cannot be empty!</h5></div></center>
+      <center><div hidden$="{{isEmptyEmail}}"><h5>Email Cannot be empty!</h5></div></center>
+      </div>
+
+      <center><p class="pad1" onclick="reset.open()"> Forgot your Password? </p></center>
+
+
+
+      <paper-dialog id="reset" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+        <center><h2>Password Reset</h2></center>
+        <forgot-password></forgot-password> <!-- Password Reset element used here -->
+      </paper-dialog>
+
+    </div>
+    
+  </template>
+
+  <script>
+
+//Polymer object start
+
+  Polymer({
+
+    is: 'login-element', //Object's id
+
+    properties:{ // anything with {{}} will look here by default 
+
+      password: { //once found, it will look for the value 
+        type: String,
+        value: "" // the value has two way binding with the element's attribute and this value so if either one updates, so will the other.
+      },
+
+      email: {
+        type: String,
+        value: "" 
+      },
+
+      isEmptyPassword: {
+        type: Boolean,
+        value:true
+      },
+
+      isEmptyEmail:{
+        type:Boolean,
+        value:true
+      },
+      wrongPwd:{
+        type:Boolean,
+        value:true
+      },
+      len:{
+        type:Boolean,
+        value:true
+      }
+
+    },
+
+    //clearing input fields just set it back to ""
+    clearEmail:function(){
+      this.email = "";
+    },
+    clearPwd:function(){
+      this.password = "";
+    },
+
+    validate:function(){
+     var valid = true;//validation assume true, prove false 
+
+     if(this.email==""){//check for empty email
+      valid=false;this.isEmptyEmail=false;
+     }
+     else{
+      this.isEmptyEmail=true
+     } 
+
+     if(this.password==""){//check for empty password
+       valid=false;
+       this.isEmptyPassword=false;
+     } 
+     else{
+      this.isEmptyPassword=true;
+     } 
+
+     if(this.password.length<=8){//check for password length <8
+       valid=false;
+       this.len=false;
+     } 
+     else{
+      this.len=true;
+     } 
+
+     return valid;
+    },
+
+    submit:function(){
+
+    //get input field values
+    var pwd= this.password; 
+    var email= this.email;
+    //if valid is true then connect to firebase 
+    var el = document.getElementById("wrong"); //get ref to element
+
+     if(this.validate()){ // after validation, if valid remained true
+
+     var config = { //payload credentials used to init firebase
+      apiKey: "AIzaSyC6eDWKijDTx9ZqawwYMZbZ9rpPiu8_pyU",
+      authDomain: "fir-8c2f0.firebaseapp.com",
+      databaseURL: "https://fir-8c2f0.firebaseio.com",
+      storageBucket: "fir-8c2f0.appspot.com",
+      messagingSenderId: "633932494815"
+     }
+
+      var app = firebase.initializeApp(config); // firebase connection initialization
+
+          firebase.auth().signInWithEmailAndPassword(this.email, this.password) //default to make a sign in attempt with firebase
+          .then(function(){ // if successful - then
+            var uid = firebase.auth().currentUser.uid; //get user's unique uid that's generated on sign up
+          
+
+            //change div hidden -> visible, change color to green and login successful 
+
+            if(firebase.auth().currentUser.emailVerified){ //only if the email is verified, we can preoceed
+
+              el.style.color = "#1BBC9B";
+              el.innerHTML = "Login Successful!";
+              el.style.visibility = "visible";
+
+              window.location.assign("user-home.html?"+uid); //navigates to user-home. Send uid for db lookup. Don't worry about auth session pavan.singh@derivco.co.za
+
+            }
+            else{ // if email isnt verified
+
+             el.innerHTML = "Please Verify Your Email!";
+             el.style.visibility = "visible";
+             firebase.app().delete(); //terminate session
+
+            }
+
+      })
+          .catch(function(error) { //if error
+           
+           //display  login unsuccessful msg
+             el.innerHTML = "Wrong Email or Password!";
+             el.style.visibility = "visible";
+
+            firebase.app().delete();//close firebase session to avoid clashing sessions
+           
+      });
+
+
+     }
+
+      
+
+    }
+
+});
+
+  </script>
+
+</dom-module>

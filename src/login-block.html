@@ -1,0 +1,67 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<link rel="import" href="login-element.html">
+<link rel="import" href="signup-element.html">
+
+<dom-module id="login-block">
+
+  <template>
+    <style>
+    
+      .center {
+        position: absolute;
+        bottom: 0;
+        top: 0;
+        right: 0;
+        left: 0;
+        margin : auto;
+        width: 190px;
+        height: 40px;
+        display: block;
+      }
+
+      paper-button {
+        background: #3498db;
+        color: #FFFFFF;
+      }
+
+    </style>
+  
+<div class="center">
+
+<paper-button raised onclick="login.open()">Login</paper-button>
+
+  <paper-dialog id="login" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+    <center><h2>Login</h2></center>
+  <login-element></login-element>
+</paper-dialog>
+
+<paper-button raised onclick="signup.open()">Sign Up</paper-button>
+
+  <paper-dialog id="signup" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+    <center><h2>Sign Up</h2></center>
+  <signup-element></signup-element>
+</paper-dialog>
+
+</div>
+
+ </template>
+  
+  <script>
+    Polymer({
+        is: "login-block"
+    });
+  </script>
+
+</dom-module>

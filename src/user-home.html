@@ -1,0 +1,211 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="https://www.gstatic.com/firebasejs/3.6.1/firebase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+
+	<title id="userName">User</title>
+</head>
+<body>
+
+<center>
+  <table>
+    <tr>
+      <td>
+        <center>
+            <div style="width: 100%">
+              <label>Change Name</label>
+              <paper-input id = "name"></paper-input>
+              <button style="width: 100%" onclick="change_name()" value="nn">Save</button>
+            </div>
+        </center>
+      </td>
+
+      <td>
+        <center>
+            <div style="width: 100%">
+              <label>Change Surname</label>
+              <paper-input id = "surname"></paper-input>
+              <button style="width: 100%" onclick="change_surname()">Save</button>
+            </div>
+        </center>
+      </td>
+
+      <td>
+        <center>
+            <div style="width: 100%">
+              <label>Change Username</label>
+              <paper-input id = "username"></paper-input>
+              <button style="width: 100%" onclick="change_username()">Save</button>
+            </div>
+        </center>
+      </td>
+
+      <td>
+        <center>
+            <div style="width: 100%">
+              <label>Change Email</label>
+              <paper-input id = "email"></paper-input>
+              <button style="width: 100%" onclick="change_email()">Save</button>
+            </div>
+        </center>
+      </td>
+
+      <td>
+        <center>
+            <div style="width: 100%">
+              <label>Change Password</label>
+              <paper-input id = "pwd"></paper-input>
+              <button style="width: 100%" onclick="change_password()">Save</button>
+            </div>
+        </center>
+      </td>
+
+    </tr>
+  </table>
+
+<div>
+<center><paper-button raised onclick="logout()">Log Out</paper-button></center>
+</div>
+  
+</center>
+
+
+
+</body>
+
+
+<script>
+
+
+
+	var uid = window.location.search.substr(1);
+	
+	//start db lookup
+ var config = { //payload to firebase
+      apiKey: "AIzaSyC6eDWKijDTx9ZqawwYMZbZ9rpPiu8_pyU",
+      authDomain: "fir-8c2f0.firebaseapp.com",
+      databaseURL: "https://fir-8c2f0.firebaseio.com",
+      storageBucket: "fir-8c2f0.appspot.com",
+      messagingSenderId: "633932494815"
+ }
+
+var app = firebase.initializeApp(config); //initialize application and connect to firebase
+
+var ref = firebase.database().ref("users/"+uid); //use fire base db service and create reference to the lo0gged in users directory
+
+function logout(){
+
+    firebase.auth().signOut()//initiate logout
+
+    .then(function() {
+     firebase.app().delete();//if successful terminate session
+	   window.location.assign("/src"); //go back to index
+	});
+}
+
+
+//update name
+function change_name(){
+  ref.update({
+    name:document.getElementById("name").value
+  })
+
+  .catch(function(){
+    alert("Name could not be changed!");
+  })
+
+  .then(function(){
+    alert("Name changed successfully!");
+  });
+}
+
+//update surname
+function change_surname(){
+  ref.update({
+    surname:document.getElementById("surname").value
+  })
+
+  .catch(function(){
+    alert("Surname could not be changed!");
+  })
+
+  .then(function(){
+    alert("Surname changed successfully!");
+  });
+}
+//update username
+function change_username(){
+  ref.update({
+    username:document.getElementById("username").value
+  })
+
+  .catch(function(){
+    alert("Username could not be changed!");
+  })
+
+  .then(function(){
+    alert("Username changed successfully!");
+  });
+}
+//update email
+function change_email(){  //we now have to update in both the db and the auth details
+  
+  var user = firebase.auth().currentUser;//get ref to current auth user
+
+  user.updateEmail(document.getElementById("email").value) //first try and update auth details
+
+  .then(function(){
+    ref.update({email:document.getElementById("email").value})//then attempt to update db
+
+      .catch(function(){
+        alert("Email could not be changed, Please try again!");
+      })
+
+      .then(function(){
+        alert("Email changed!");
+      });
+    
+  })
+
+  .catch(function(error){
+    alert(error.message);
+  });
+}
+
+//change pwd - Have to do the same for username
+function change_password(){
+  var user = firebase.auth().currentUser;
+
+  user.updatePassword(document.getElementById("pwd").value)
+
+  .catch(function(error){
+    alert(error.message);
+  })
+
+  .then(function(){
+    alert("Password Changed!");
+  });
+}
+//ffff@gmail.com
+</script>
+
+</html>

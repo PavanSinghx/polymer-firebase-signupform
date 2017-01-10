@@ -1,0 +1,404 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-snippet.html">
+<link rel="import" href="../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<dom-module id="signup-element">
+
+  <template>
+
+
+    <style>
+      /* local DOM styles go here */
+      :host {
+        display: inline-block;
+      }
+      .pad1 {
+        padding-top: 20px;
+      }
+      .line1 {
+        display:block;
+      } 
+      .red{
+        color: rgba(247, 110, 110, 1);
+      }
+    </style>
+
+
+    <table>
+      <tr>
+        <td>
+          <paper-input id="firstname" style="width: 90%" class="box" label="First Name" auto-validate allowed-pattern="[a-zA-Z]" value={{name}}>
+            <paper-icon-button icon="clear" alt="clear" title="clear">
+            </paper-icon-button>
+          </paper-input>
+        </td>
+
+        <td>
+          <paper-input id="surname" style="width: 100%" class="box" label="Last Name" auto-validate allowed-pattern="[a-zA-Z]" value={{surname}}>
+            <paper-icon-button icon="clear" alt="clear" title="clear">
+            </paper-icon-button>
+          </paper-input>
+
+        </td>
+      </tr>
+
+    </table>
+
+    <paper-input id="username" label="Username" auto-validate allowed-pattern="[a-z0-9._]" maxlength="15" value="{{username}}" >
+      <iron-icon icon="fingerprint" prefix ></iron-icon>
+      <paper-icon-button suffix on-click="clearUsername" icon="clear" alt="clear" title="clear">
+      </paper-icon-button>
+    </paper-input>
+
+    <paper-input id="email" label="Email" auto-validate allowed-pattern="[a-z0-9@.]" value="{{email}}" on-keyup="validEmail" on-tap="validEmail">
+      <iron-icon icon="mail" prefix></iron-icon>
+      <paper-icon-button suffix on-click="clearEmail" icon="clear" alt="clear" title="clear" >
+      </paper-icon-button>
+    </paper-input>
+
+
+    <paper-input id="pwd" type="password" label="Password" value="{{password}}" on-keyup="passLength" on-tap="passLength"> 
+      <iron-icon icon="lock" prefix></iron-icon>
+      <paper-icon-button suffix on-click="clearPwd" on icon="clear" alt="clear" title="clear">
+      </paper-icon-button>
+    </paper-input>
+
+    <paper-input id="pwdConfirm" type="password" label="Confirm Password" value="{{confPass}}" on-keyup="passCheck" on-tap="passCheck">
+      <iron-icon icon="lock" prefix></iron-icon>
+      <paper-icon-button suffix on-click="clearConfPwd" icon="clear" alt="clear" title="clear">
+      </paper-icon-button>
+    </paper-input>
+
+    <div class="pad1">
+      <center><paper-button raised on-click="submit"></iron-icon>Sign Up</paper-button></center>
+    </div>
+
+
+    <div class="red">
+      <center><div id="wrong1" style="visibility: hidden;"><h5></h5></div></center>
+      <center><div id="wrong2" style="visibility: hidden;"><h5></h5></div></center>
+      <center><div hidden$="{{len}}"><h5>Passwords length Must be greater than 8!</h5></div></center>
+      <center><div hidden$="{{match}}"><h5>Passwords do not match!</h5></div></center>
+      <center><div hidden$="{{at}}"><h5>Please Enter a Valid Email!</h5></div></center>
+      <center><div hidden$="{{nameCheck}}"><h5>Enter your Name!</h5></div></center>
+      <center><div hidden$="{{surnameCheck}}"><h5>Enter your Surname!</h5></div></center>
+      <center><div hidden$="{{usernameTaken}}"><h5>Username already taken, Please try again!</div></center>
+    </div>
+
+
+
+
+  </template>
+
+  <script src="https://www.gstatic.com/firebasejs/3.6.1/firebase.js"></script>
+
+  <script>
+
+
+
+//Begin Polymer Object
+
+Polymer({
+  is: 'signup-element', // id
+
+  properties:{ // default property anything in {{}} looks at
+  name: {
+    type: String,
+    value: "" 
+  },
+  surname: {
+    type: String,
+    value: "" 
+  },
+  password: {
+    type: String,
+    value: "" 
+  },
+
+  confPass: {
+    type: String,
+    value: "" 
+  },
+
+  username: {
+    type: String,
+    value: "" 
+  },
+
+  email: {
+    type: String,
+    value: "" 
+  },
+
+  match: {
+    type: Boolean,
+    value:true
+  },
+
+  len:{
+    type:Boolean,
+    value:true
+  },
+  at:{
+    type:Boolean,
+    value:true
+  },
+  nameCheck:{
+    type:Boolean,
+    value:true
+  },
+  usernameTaken:{
+    type:Boolean,
+    value:true
+  },
+  surnameCheck:{
+    type:Boolean,
+    value:true
+  }
+
+},
+
+
+  passCheck: function(){ // checks if password == confirmed password
+
+    if(this.password != this.confPass){
+      this.match=false;
+    }
+    else{
+      this.match=true;
+    }
+  },
+
+  passLength: function() { // checks if length is <= 8
+    if(this.password.length<=8){
+      this.len = false;
+    }
+    else{
+      this.len=true;
+    }
+  },
+
+  validEmail:function(){  //validataes email addresss
+    var valid = false;
+
+      if(this.email.includes("@") && this.email.includes(".")){ //needs to first include . and @
+
+        var atIndex = this.email.indexOf("@"); //find occurance of @
+        var dotIndex = this.email.indexOf(".");//find occurance of .
+
+        //checks if there is chars before the @, checks if there are characters between the @ and the . then finally chars after .
+        if((this.email.substr(0,atIndex).length>=1)&&(this.email.substr(atIndex+1,dotIndex).length>=1)&&(this.email.substr(dotIndex+1).length>=1)){
+          valid= true;
+        }
+      }
+
+      if(valid==false){this.at=false;}else{this.at=true;} 
+
+      return valid;// returns bool value
+    },
+
+
+  isEmptyName: function(){ // checks for the case of an empty name
+
+    if(this.name==""){
+      this.nameCheck=false;
+    }
+    else{this.nameCheck=true;}
+
+    return (this.name=="");
+  },
+
+  isEmptySurname: function(){ // checks for the case of an empty surname
+    if(this.surname==""){
+      this.surnameCheck=false;
+    }
+    else{this.surnameCheck=true;}
+
+    return (this.surname=="");
+  },
+
+  validate: function(){
+
+    var valid = true;// trying to prove false
+
+    if(this.validEmail()==false){ //email check
+      valid=false;
+    }
+    if(this.confPass!=this.password){ //pwd = conf pwd
+      this.match=false;
+      valid=false;
+    }
+    if(this.password.length<=8){ 
+      this.len=false;   
+      valid=false;  
+    }
+    if(this.isEmptyName()){
+      valid=false;
+    }
+    if(this.isEmptySurname()){
+      valid=false;
+    }
+    if(this.len==false){
+      valid=false;
+    }
+
+    return valid;
+
+  },
+
+//2nd validation
+submit:function(){
+
+    //var wrong2 = document.getElementById("wrong2");
+
+    //create local vars of polymer props that are binded with inputs
+    var name = this.name;
+    var surname = this.surname;
+    var username = this.username;
+    var pwd= this.password;
+    var email= this.email;
+    var len= this.len;
+    var match= this.match;
+    var confPass= this.confPass;
+
+    
+    //if true connect to firebase
+    if(this.validate()){
+
+      var config = { // cpayload credentials to connect to firebase
+
+        apiKey: "AIzaSyC6eDWKijDTx9ZqawwYMZbZ9rpPiu8_pyU",
+        authDomain: "fir-8c2f0.firebaseapp.com",
+        databaseURL: "https://fir-8c2f0.firebaseio.com",
+        storageBucket: "fir-8c2f0.appspot.com",
+        messagingSenderId: "633932494815"
+
+      }
+
+      var app = firebase.initializeApp(config); // init app and establish firebase connection
+
+      var username_exists = false; //will be useds aas a flag to check if username exists
+
+      var ref = firebase.database().ref("users");// ref to user location in db
+
+      ref.once("value", function(snapshot) {//snapshot obj contains retrieved db data. Once is does one look up
+        if(snapshot!= null){
+          var data = snapshot.val(); //this conatains just the obj data we want to work with
+
+          for(var i in data){ //i takes on each sub obj in data
+            //console.log(data[i].username);
+            if(data[i].username==username){// check if username from db == username from input field
+              
+              username_exists = true;//flagged
+
+              break;//break out of for loop
+            }
+          }
+
+          if(username_exists == false){ // if username doesnt exist we can then continue
+            create_account(name,surname,username,email,pwd);//we can creare account
+          }
+          else{
+
+              //If username_exists != false, then err msg will display again
+              displayMessage("Username Taken!","#c0392b");
+              firebase.app().delete();// terminate session
+          }
+        }
+    });
+  }
+},
+
+//clear input field
+clearUsername:function(){
+  this.username = "";
+},
+clearEmail:function(){
+  this.email = "";
+},
+clearPwd:function(){
+  this.password = "";
+},
+clearConfPwd:function(){
+  this.confPass = "";
+}
+
+});
+
+
+function create_account(namex,surnamex,usernamex,emailx,passwordx){
+
+  var email_taken = false;
+
+  firebase.auth().createUserWithEmailAndPassword(emailx, passwordx) //Adds user to auth section in firebase. We still have to manually add user to db
+
+  .then(function(user){ // successfully added to auth section
+
+    var currentUser = firebase.auth().currentUser;// check currently auth user
+    var uid = currentUser.uid; // check currently authed user's uid
+
+    firebase.database().ref('users/'+uid).set({ //set values into db
+
+      uid:uid,
+      name:namex,
+      surname:surnamex,
+      username:usernamex,
+      //pwd:passwordx, probably bad to store user's pwd in db
+      email:emailx
+
+    })
+
+    .then(function(){
+
+      displayMessage("<p>Sign Up Successful! Please check your email<p>to verify your account","#1BBC9B")
+      currentUser.sendEmailVerification();  //send email verification
+      firebase.app().delete();
+
+    })
+
+    .catch(function(){
+
+      alert('Failed to add credentials to database! Removing user!');
+
+      currentUser.delete().then(function() {
+        alert('User Removed!');
+      }, function(error) {
+        alert('Couldn\'t Remove user credentials from database!');
+      });
+
+      firebase.app().delete();
+
+    });
+
+
+  })
+
+  .catch(function(error) {
+
+    displayMessage(error.message,"#c0392b");
+    firebase.app().delete();
+
+  });
+}
+
+function displayMessage(msg,color){
+
+  var wrong1 = document.getElementById("wrong1"); 
+  wrong1.style.color = color;
+  wrong1.innerHTML = msg;
+  wrong1.style.visibility = "visible";
+
+}
+</script>
+
+</dom-module>
